@@ -79,28 +79,48 @@ const App = () => {
   // --- FIX: Restored content for renderHomePage ---
   const renderHomePage = () => (
     <>
-      {/* Search Bar */}
-      <div className="bg-slate-800 rounded-xl shadow-lg p-8 mb-12 animate-fadeInUp">
-        <h2 className="text-3xl font-bold text-purple-200 mb-4 text-center">
-          What skills do you want to learn?
-        </h2>
-        <form onSubmit={handleSearch}>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search for skills and press Enter..."
-            className="mt-1 block w-full rounded-md border-gray-600 bg-slate-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-4 text-center text-lg transition-all duration-300 ease-in-out focus:ring-4 focus:ring-opacity-50"
-          />
-        </form>
+      {/* Hero Section */}
+      <div className="flex flex-col items-center justify-center text-center min-h-[85vh]">
+        <header className="mb-10">
+          <h1 className="text-6xl md:text-7xl font-extrabold text-purple-300 mb-2 tracking-wider">
+            hai
+          </h1>
+          <blockquote className="mt-4 text-xl italic text-gray-400">
+            "Learn something with someone"
+          </blockquote>
+          <button 
+            onClick={() => setView('why')} 
+            className="mt-4 bg-transparent border border-purple-400 text-purple-300 font-bold py-2 px-6 rounded-lg hover:bg-purple-400 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition duration-300 ease-in-out animate-fadeInUp-600"
+          >
+            Why?
+          </button>
+        </header>
+
+        {/* Search Bar */}
+        <div className="bg-slate-800 rounded-xl shadow-lg p-8 w-full max-w-3xl animate-fadeInUp">
+          <h2 className="text-3xl font-bold text-purple-200 mb-4">
+            What skills do you want to learn?
+          </h2>
+          <form onSubmit={handleSearch}>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search for skills and press Enter..."
+              className="mt-1 block w-full rounded-md border-gray-600 bg-slate-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-4 text-center text-lg transition-all duration-300 ease-in-out focus:ring-4 focus:ring-opacity-50"
+            />
+          </form>
+        </div>
       </div>
+
       {/* Map Section */}
-      <div className="bg-slate-800 rounded-xl shadow-lg p-4 md:p-8 mb-12 animate-fadeInUp-200">
+      <div className="bg-slate-800 rounded-xl shadow-lg p-4 md:p-8 mt-24 mb-12 animate-fadeInUp-200">
         <h2 className="text-3xl font-bold text-purple-200 mb-4 text-center">
           Who's Teaching Near You?
         </h2>
         <SkillsMap skillsToTeach={skillsToTeach} />
       </div>
+
       {/* Stats Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
         <div className="bg-slate-800 rounded-xl shadow-md p-6 text-center animate-fadeInUp-400">
@@ -177,11 +197,10 @@ const App = () => {
       onBack={handleBackToHome}
     />
   );
-
-
+  
   // --- MAIN RETURN ---
   return (
-    <div className="min-h-screen bg-slate-900 font-sans p-4 md:p-8 text-gray-200">
+    <div className="min-h-screen bg-slate-900 p-4 md:p-8 text-gray-200">
       <div className={`max-w-7xl mx-auto transition-opacity duration-700 ${contentVisible ? 'opacity-100' : 'opacity-0'}`}>
         <div className="relative">
           <div className="absolute top-0 right-0 z-10">
@@ -191,22 +210,6 @@ const App = () => {
               onLogout={handleLogout}
             />
           </div>
-          <header className="text-center mb-10">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-purple-300 mb-2">
-              Skill Share
-            </h1>
-            <p className="text-lg md:text-xl text-purple-100">
-              Learn and teach new skills with your peers!
-            </p>
-            {view === 'home' && (
-              <button 
-                onClick={() => setView('why')} 
-                className="mt-4 bg-transparent border border-purple-400 text-purple-300 font-bold py-2 px-6 rounded-lg hover:bg-purple-400 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition duration-300 ease-in-out animate-fadeInUp-600"
-              >
-                Why?
-              </button>
-            )}
-          </header>
         </div>
         
         {view === 'home' && renderHomePage()}
