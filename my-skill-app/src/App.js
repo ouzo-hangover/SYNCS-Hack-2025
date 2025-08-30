@@ -40,6 +40,12 @@ const App = () => {
 
   // --- INITIAL DATA & FUNCTIONS ---
   useEffect(() => {
+    // Check for a logged-in user in session storage to persist login state
+    const storedUser = sessionStorage.getItem('currentUser');
+    if (storedUser) {
+      setCurrentUser(JSON.parse(storedUser));
+    }
+
     const fetchData = async () => {
       try {
         const response = await fetch('/data.json');
@@ -48,9 +54,10 @@ const App = () => {
         }
         const data = await response.json();
 
-        let skillIdCounter = 1;
+        let skillIdCounter = 1000; // Start from a higher number to avoid collision with any potential local data
         const loadedSkills = data.users.flatMap(user => {
-          const teachingSkills = user.skills.map(skill => ({
+          // Skills are what the user can teach
+          const teachingSkills = (user.skills || []).map(skill => ({
             id: skillIdCounter++,
             userId: user.id,
             createdAt: new Date(),
@@ -60,13 +67,15 @@ const App = () => {
             location: { lat: user.location.lat, lng: user.location.long } // Map long to lng
           }));
 
-          const learningInterests = user.interests.map(interest => ({
+          // Interests are what the user wants to learn.
+          const learningInterests = (user.interests || []).map(interest => ({
             id: skillIdCounter++,
             userId: user.id,
             createdAt: new Date(),
             title: interest.name,
             description: `${user.name} is looking to learn about ${interest.name}.`,
             type: 'learn',
+            // Learning skills don't need a location on the map.
           }));
 
           return [...teachingSkills, ...learningInterests];
@@ -74,34 +83,30 @@ const App = () => {
 
         setSkills(loadedSkills);
       } catch (error) {
-        console.error("Could not load skill data from data.json:", error);
+        console.error("Could not load user data from data.json:", error);
       }
     };
 
     fetchData();
-
-    const mockUser = {
-      id: 101,
-      name: "Alex Rivera",
-      email: "alex.r@example.com",
-      interests: "Hiking, JavaScript, Coffee",
-      skills: ["React", "Python"],
-      city: "Brisbane",
-      location: { lat: -27.48, lng: 153.01 },
-    };
-    setCurrentUser(mockUser);
 
     setTimeout(() => setContentVisible(true), 100);
   }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    const results = skills.filter(
-      (skill) =>
-        skill.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        skill.description.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setSearchResults(results);
+    const trimmedQuery = searchQuery.trim().toLowerCase();
+    if (trimmedQuery === "") {
+      // If search is empty, show all skills
+      setSearchResults(skills);
+    } else {
+      // Otherwise, filter as before
+      const results = skills.filter(
+        (skill) =>
+          skill.title.toLowerCase().includes(trimmedQuery) ||
+          skill.description.toLowerCase().includes(trimmedQuery)
+      );
+      setSearchResults(results);
+    }
     setView("results");
   };
 
@@ -112,30 +117,57 @@ const App = () => {
 
   const handleRegister = async (newUser) => {
     console.log("Registering new user:", newUser);
-    if (newUser.city) {
-      const location = await geocodeCity(newUser.city);
-      setCurrentUser({ ...newUser, location });
-    } else {
-      setCurrentUser(newUser);
+
+    const standardizedData = { ...newUser };
+    // Standardize skills and interests from string to array of objects
+    if (typeof standardizedData.skills === 'string') {
+        standardizedData.skills = standardizedData.skills.split(',').map(s => s.trim()).filter(Boolean).map(name => ({ name }));
     }
+    if (typeof standardizedData.interests === 'string') {
+        standardizedData.interests = standardizedData.interests.split(',').map(i => i.trim()).filter(Boolean).map(name => ({ name }));
+    }
+
+    let userToSave;
+    if (standardizedData.city) {
+      const location = await geocodeCity(standardizedData.city);
+      userToSave = { ...standardizedData, location };
+    } else {
+      userToSave = standardizedData;
+    }
+    setCurrentUser(userToSave);
+    sessionStorage.setItem('currentUser', JSON.stringify(userToSave));
     setView("home");
     alert("Account created successfully!");
   };
 
   const handleUpdateProfile = async (updatedUser) => {
     console.log("Updating profile:", updatedUser);
-    if (updatedUser.city && updatedUser.city !== currentUser?.city) {
-      const location = await geocodeCity(updatedUser.city);
-      setCurrentUser({ ...updatedUser, location });
-    } else {
-      setCurrentUser(updatedUser);
+
+    const standardizedData = { ...updatedUser };
+    // Standardize skills and interests from string to array of objects
+    if (typeof standardizedData.skills === 'string') {
+        standardizedData.skills = standardizedData.skills.split(',').map(s => s.trim()).filter(Boolean).map(name => ({ name }));
     }
+    if (typeof standardizedData.interests === 'string') {
+        standardizedData.interests = standardizedData.interests.split(',').map(i => i.trim()).filter(Boolean).map(name => ({ name }));
+    }
+
+    let userToSave;
+    if (standardizedData.city && standardizedData.city !== currentUser?.city) {
+      const location = await geocodeCity(standardizedData.city);
+      userToSave = { ...currentUser, ...standardizedData, location };
+    } else {
+      userToSave = { ...currentUser, ...standardizedData };
+    }
+    setCurrentUser(userToSave);
+    sessionStorage.setItem('currentUser', JSON.stringify(userToSave));
     setView("home");
     alert("Profile updated successfully!");
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
+    sessionStorage.removeItem('currentUser');
     setView("home");
   };
 
@@ -312,6 +344,7 @@ const App = () => {
         <div className="relative">
           <div className="absolute top-0 right-0 z-10">
             <UserMenu
+              currentUser={currentUser}
               isLoggedIn={!!currentUser}
               onNavigateToAccount={() => setView("account")}
               onLogout={handleLogout}

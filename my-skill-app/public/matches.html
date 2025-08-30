@@ -532,6 +532,7 @@
             <div class="sidebar">
                 <div class="sidebar-header">
                     <h2>Profile Matches</h2>
+                    <a href="/" style="display: inline-block; margin-top: 1rem; color: #c4b5fd; text-decoration: none; font-weight: bold;">← Back to Home</a>
                     <p>Click on any profile to view details</p>
                 </div>
                 <div class="profile-list" id="profileList">
@@ -581,6 +582,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
         let profiles = []; // This will be populated from data.json
+        let allUsers = []; // Will store all users from data.json
         let currentProfileId = null;
         let currentChatProfile = null;
         let messages = {}; // Store messages for each profile
@@ -599,6 +601,28 @@
             });
         }
 
+        // Helper to format a user object from data.json into a profile object
+        function formatUserAsProfile(user) {
+            const userSkills = user.skills.map(s => s.name);
+            const userInterests = user.interests.map(i => i.name);
+
+            return {
+                id: user.id,
+                name: user.name,
+                locationName: user.location_name,
+                location: user.location,
+                title: userSkills.length > 0 ? `${userSkills[0]} Enthusiast` : "Learner & Teacher",
+                preview: `Interested in ${userInterests.join(', ')}. Skilled in ${userSkills.join(', ')}. Based in ${user.location_name}.`,
+                email: `${user.name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
+                phone: `+61 4${String(Math.floor(10 + Math.random() * 90)).padStart(2, '0')} ${String(Math.floor(100 + Math.random() * 900)).padStart(3, '0')} ${String(Math.floor(100 + Math.random() * 900)).padStart(3, '0')}`,
+                bio: `${user.name} is a passionate individual from ${user.location_name}, eager to share knowledge in ${userSkills.join(', ')} and learn more about ${userInterests.join(', ')}.`,
+                skills: {
+                    "Skills to Share": userSkills,
+                },
+                interests: userInterests
+            };
+        }
+
         // Initialize the page
         async function initializePage() {
             try {
@@ -607,35 +631,57 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
+                allUsers = data.users;
 
-                // Map the data from data.json to the format expected by this page
-                profiles = data.users.map((user, index) => {
-                    const userSkills = user.skills.map(s => s.name);
-                    const userInterests = user.interests.map(i => i.name);
+                const urlParams = new URLSearchParams(window.location.search);
+                const currentUserId = urlParams.get('userId') ? parseInt(urlParams.get('userId'), 10) : null;
 
-                    return {
-                        id: user.id,
-                        name: user.name,
-                        locationName: user.location_name,
-                        location: user.location,
-                        title: userSkills.length > 0 ? `${userSkills[0]} Enthusiast` : "Learner & Teacher",
-                        preview: `Interested in ${userInterests.join(', ')}. Skilled in ${userSkills.join(', ')}. Based in ${user.location_name}.`,
-                        email: `${user.name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
-                        phone: `+61 4${String(Math.floor(10 + Math.random() * 90)).padStart(2, '0')} ${String(Math.floor(100 + Math.random() * 900)).padStart(3, '0')} ${String(Math.floor(100 + Math.random() * 900)).padStart(3, '0')}`,
-                        bio: `${user.name} is a passionate individual from ${user.location_name}, eager to share knowledge in ${userSkills.join(', ')} and learn more about ${userInterests.join(', ')}.`,
-                        skills: {
-                            "Skills to Share": userSkills,
-                        },
-                        interests: userInterests
-                    };
-                });
+                // Try to get the most up-to-date user profile from session storage
+                const storedUserJSON = sessionStorage.getItem('currentUser');
+                let currentUser = null;
+
+                if (storedUserJSON) {
+                    const storedUser = JSON.parse(storedUserJSON);
+                    // Ensure the user from session storage is the one we're supposed to be matching for
+                    if (storedUser.id === currentUserId) {
+                        currentUser = storedUser;
+                    }
+                }
+
+                // If not in session storage, fall back to the (potentially stale) data from data.json
+                if (!currentUser && currentUserId) {
+                    currentUser = allUsers.find(u => u.id === currentUserId);
+                }
+
+                let matchedUsers = [];
+
+                if (currentUser) {
+                        const currentUserSkills = new Set((currentUser.skills || []).map(s => s.name.toLowerCase()));
+                        const currentUserInterests = new Set((currentUser.interests || []).map(i => i.name.toLowerCase()));
+
+                        const otherUsers = allUsers.filter(u => u.id !== currentUserId);
+
+                        matchedUsers = otherUsers.filter(otherUser => {
+                            const otherUserSkills = (otherUser.skills || []).map(s => s.name.toLowerCase());
+                            const otherUserInterests = (otherUser.interests || []).map(i => i.name.toLowerCase());
+
+                            // Match 1: My skills match their interests
+                            const skillMatch = otherUserInterests.some(interest => currentUserSkills.has(interest));
+                            // Match 2: My interests match their skills
+                            const interestMatch = otherUserSkills.some(skill => currentUserInterests.has(skill));
+
+                            return skillMatch || interestMatch;
+                        });
+                }
+                // If no currentUserId, matchedUsers remains empty, and the page will show "No matches found".
+
+                profiles = matchedUsers.map(formatUserAsProfile);
 
                 renderProfileList();
                 initializeMessages();
                 initializeMap();
 
                 // Check for a matchId in the URL and select the profile
-                const urlParams = new URLSearchParams(window.location.search);
                 const matchId = urlParams.get('matchId');
                 if (matchId) {
                     selectProfile(parseInt(matchId, 10));
@@ -649,7 +695,7 @@
 
         // Initialize the map with profile markers
         function initializeMap() {
-            if (!profiles.length || typeof L === 'undefined') return;
+            if (typeof L === 'undefined') return;
 
             const mapElement = document.getElementById('map');
             if (!mapElement) return;
@@ -661,6 +707,7 @@
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
 
+            // Only show markers for matched profiles
             profiles.forEach(profile => {
                 if (profile.location && profile.location.lat && profile.location.long) {
                     const marker = L.marker([profile.location.lat, profile.location.long]).addTo(map);
@@ -678,7 +725,10 @@
             const profileList = document.getElementById('profileList');
             profileList.innerHTML = '';
 
-            if (!profiles.length) return;
+            if (!profiles.length) {
+                profileList.innerHTML = '<p style="color: #94a3b8; padding: 1.5rem; text-align: center;">No matches found. Try updating your skills and interests!</p>';
+                return;
+            }
 
             profiles.forEach(profile => {
                 const profileCard = document.createElement('div');
@@ -702,11 +752,15 @@
             document.querySelectorAll('.profile-card').forEach(card => {
                 card.classList.remove('active');
             });
-            document.querySelector(`[data-profile-id="${profileId}"]`).classList.add('active');
+            const card = document.querySelector(`[data-profile-id="${profileId}"]`);
+            if (card) {
+                card.classList.add('active');
+            }
 
-            // Find and display the selected profile
-            const profile = profiles.find(p => p.id === profileId);
-            if (profile) {
+            // Find and display the selected profile from all users
+            const user = allUsers.find(p => p.id === profileId);
+            if (user) {
+                const profile = formatUserAsProfile(user);
                 renderProfileDetail(profile);
                 currentProfileId = profileId;
             }

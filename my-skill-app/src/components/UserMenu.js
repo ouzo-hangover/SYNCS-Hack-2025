@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const UserMenu = ({ isLoggedIn, onNavigateToAccount, onLogout }) => {
+const UserMenu = ({ currentUser, isLoggedIn, onNavigateToAccount, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -44,7 +44,10 @@ const UserMenu = ({ isLoggedIn, onNavigateToAccount, onLogout }) => {
         >
           {isLoggedIn ? (
             <>
-              <a href="/matches.html" className="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white" role="menuitem">
+              <a
+                href={currentUser ? `/matches.html?userId=${currentUser.id}` : '/matches.html'}
+                className="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white" role="menuitem"
+              >
                 Matches
               </a>
               <button onClick={() => handleNavigation(onNavigateToAccount)} className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white" role="menuitem">

@@ -2,34 +2,28 @@
 
 import React, { useState, useEffect } from 'react';
 
-// A simple list of skills for the dropdown. You could fetch this from an API later.
-const availableSkills = ['Python', 'React', 'Gardening', 'Digital Marketing', 'Spanish', 'Web Design', 'Data Structures'];
-
 const UpdateProfileForm = ({ currentUser, onUpdate, onBack }) => {
   const [name, setName] = useState('');
   const [interests, setInterests] = useState('');
-  const [skills, setSkills] = useState([]);
+  const [skills, setSkills] = useState('');
   const [city, setCity] = useState('');
 
   // This effect pre-fills the form when a logged-in user's data is available
   useEffect(() => {
     if (currentUser) {
       setName(currentUser.name || '');
-      setInterests(currentUser.interests || '');
-      setSkills(currentUser.skills || []);
+      // When loading, convert the array of objects to a comma-separated string for display
+      setInterests(Array.isArray(currentUser.interests) ? currentUser.interests.map(i => i.name).join(', ') : (currentUser.interests || ''));
+      setSkills(Array.isArray(currentUser.skills) ? currentUser.skills.map(s => s.name).join(', ') : (currentUser.skills || ''));
       setCity(currentUser.city || '');
     }
   }, [currentUser]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    // Pass the raw string values; App.js will handle the conversion.
     const updatedUser = { ...currentUser, name, interests, skills, city };
     onUpdate(updatedUser);
-  };
-
-  const handleSkillChange = (e) => {
-    const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-    setSkills(selectedOptions);
   };
 
   return (
@@ -46,12 +40,16 @@ const UpdateProfileForm = ({ currentUser, onUpdate, onBack }) => {
           <label className="block text-purple-200 mb-2" htmlFor="update-interests">Your Interests</label>
           <input type="text" id="update-interests" value={interests} onChange={e => setInterests(e.target.value)} placeholder="e.g., hiking, coding, music" className="w-full p-3 bg-slate-700 rounded-md focus:ring-2 focus:ring-indigo-500" />
         </div>
-        {/* Skills Dropdown */}
+        {/* Skills Input */}
         <div className="mb-4">
-          <label className="block text-purple-200 mb-2" htmlFor="update-skills">Your Skills (hold Ctrl/Cmd to select multiple)</label>
-          <select id="update-skills" multiple value={skills} onChange={handleSkillChange} className="w-full p-3 bg-slate-700 rounded-md h-40 focus:ring-2 focus:ring-indigo-500">
-            {availableSkills.map(skill => <option key={skill} value={skill}>{skill}</option>)}
-          </select>
+          <label className="block text-purple-200 mb-2" htmlFor="update-skills">Your Skills (comma-separated)</label>
+          <input
+            type="text"
+            id="update-skills"
+            value={skills}
+            onChange={e => setSkills(e.target.value)}
+            placeholder="e.g., Python, React, Gardening"
+            className="w-full p-3 bg-slate-700 rounded-md focus:ring-2 focus:ring-indigo-500" />
         </div>
         {/* City Input */}
         <div className="mb-6">

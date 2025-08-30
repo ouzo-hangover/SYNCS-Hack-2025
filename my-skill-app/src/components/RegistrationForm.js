@@ -11,7 +11,7 @@ const RegistrationForm = ({ onRegister, onBack }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // For a new user, skills, interests, and location can be empty initially
-    const newUser = { id: Date.now(), name, email, city, skills: [], interests: '' };
+    const newUser = { id: Date.now(), name, email, city, skills: [], interests: [] };
     onRegister(newUser);
   };
 
