@@ -13,6 +13,8 @@ Climate change, resource scarcity, and the evolving nature of work all raise the
 ## Our Solution: hai
 hai, short for "hobbies and interests", a new social platform to enable you to swap learning skills. Whether its a new language, new sport or hobby, you'll find it in hai.
 
+Future cities will be more melded with technology than ever, so in a digital world we want our communities to thrive off connection through similar ideals, passions and interests.
+
 So come on, say hai, learn a new skill and make some new friends along the way.
 
 ## Instructions
