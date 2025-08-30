@@ -828,11 +828,12 @@
 
         // Open chat with selected profile
         function openChat(profileId) {
-            const profile = profiles.find(p => p.id === profileId);
-            if (!profile) return;
+            const user = allUsers.find(p => p.id === profileId);
+            if (!user) return;
 
+            const profile = formatUserAsProfile(user);
             currentChatProfile = profile;
-            
+
             // Update chat header
             document.getElementById('chatPersonName').textContent = `Chat with ${profile.name}`;
             document.getElementById('chatPersonTitle').textContent = profile.title;
