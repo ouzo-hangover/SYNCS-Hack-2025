@@ -170,50 +170,48 @@ const App = () => {
     sessionStorage.removeItem('currentUser');
     setView("home");
   };
-
+  
   const skillsToTeach = skills.filter((skill) => skill.type === "teach");
   const skillsToLearn = skills.filter((skill) => skill.type === "learn");
 
   // --- PAGE RENDER FUNCTIONS ---
-  // --- FIX: Restored content for renderHomePage ---
+  
+  // --- MODIFIED: renderHomePage with new logo color and restored sections ---
   const renderHomePage = () => (
     <>
-      {/* Hero Section */}
-      <div className="flex flex-col items-center justify-center text-center min-h-[85vh]">
+      <div className="flex flex-col items-center justify-center min-h-[90vh] text-center">
+        {/* Header Section */}
         <header className="mb-10">
-          <h1 className="text-6xl md:text-7xl font-extrabold text-purple-300 mb-2 tracking-wider">
-            hai
+          <h1 className="text-8xl font-bold text-white mb-2">
+            h<span className="text-purple-400">a</span>i
           </h1>
-          <blockquote className="mt-4 text-xl italic text-gray-400">
-            "Learn something with someone"
-          </blockquote>
-          <button 
-            onClick={() => setView('why')} 
-            className="mt-4 bg-transparent border border-purple-400 text-purple-300 font-bold py-2 px-6 rounded-lg hover:bg-purple-400 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition duration-300 ease-in-out animate-fadeInUp-600"
-          >
-            Why?
-          </button>
+          <p className="text-xl text-gray-400">
+            Learn something with someone
+          </p>
         </header>
-
-        {/* Search Bar */}
-        <div className="bg-slate-800 rounded-xl shadow-lg p-8 w-full max-w-3xl animate-fadeInUp">
-          <h2 className="text-3xl font-bold text-purple-200 mb-4">
-            What skills do you want to learn?
-          </h2>
-          <form onSubmit={handleSearch}>
+    
+        {/* Search Bar Section */}
+        <div className="w-full max-w-xl mx-auto my-8">
+          <form onSubmit={handleSearch} className="relative">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search for skills and press Enter..."
-              className="mt-1 block w-full rounded-md border-gray-600 bg-slate-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-4 text-center text-lg transition-all duration-300 ease-in-out focus:ring-4 focus:ring-opacity-50"
+              placeholder="What skills do you want to learn?"
+              className="w-full rounded-full border-2 border-slate-700 bg-slate-800 text-white shadow-lg focus:border-purple-500 focus:ring-purple-500 p-4 pl-6 text-lg transition-all duration-300 ease-in-out"
             />
+            <button
+              type="submit"
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold py-2.5 px-8 rounded-full shadow-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all duration-300 ease-in-out"
+            >
+              Search
+            </button>
           </form>
         </div>
       </div>
 
       {/* Map Section */}
-      <div className="bg-slate-800 rounded-xl shadow-lg p-4 md:p-8 mt-24 mb-12 animate-fadeInUp-200">
+      <div className="bg-slate-800 rounded-xl shadow-lg p-4 md:p-8 mt-24 mb-12">
         <h2 className="text-3xl font-bold text-purple-200 mb-4 text-center">
           Who's Teaching Near You?
         </h2>
@@ -222,7 +220,7 @@ const App = () => {
 
       {/* Stats Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-        <div className="bg-slate-800 rounded-xl shadow-md p-6 text-center animate-fadeInUp-400">
+        <div className="bg-slate-800 rounded-xl shadow-md p-6 text-center">
           <h4 className="text-lg font-semibold text-purple-200">
             Total Skills
           </h4>
@@ -230,13 +228,13 @@ const App = () => {
             {skills.length}
           </p>
         </div>
-        <div className="bg-slate-800 rounded-xl shadow-md p-6 text-center animate-fadeInUp-600">
+        <div className="bg-slate-800 rounded-xl shadow-md p-6 text-center">
           <h4 className="text-lg font-semibold text-purple-200">To Teach</h4>
           <p className="text-4xl font-bold text-green-400 mt-2">
             {skillsToTeach.length}
           </p>
         </div>
-        <div className="bg-slate-800 rounded-xl shadow-md p-6 text-center animate-fadeInUp-600">
+        <div className="bg-slate-800 rounded-xl shadow-md p-6 text-center">
           <h4 className="text-lg font-semibold text-purple-200">To Learn</h4>
           <p className="text-4xl font-bold text-purple-400 mt-2">
             {skillsToLearn.length}
@@ -246,7 +244,6 @@ const App = () => {
     </>
   );
 
-  // --- FIX: Restored content for renderResultsPage ---
   const renderResultsPage = () => {
     const resultsToTeachOnMap = searchResults.filter(
       (skill) => skill.type === "teach" && skill.location
@@ -287,7 +284,6 @@ const App = () => {
     );
   };
 
-  // --- FIX: Restored content for renderWhyPage ---
   const renderWhyPage = () => (
     <div className="bg-slate-800 rounded-xl shadow-lg p-8 md:p-12 animate-fadeInUp text-left max-w-4xl mx-auto">
       <h2 className="text-3xl md:text-4xl font-bold text-purple-300 mb-4">
@@ -335,7 +331,7 @@ const App = () => {
 
   // --- MAIN RETURN ---
   return (
-    <div className="min-h-screen bg-slate-900 p-4 md:p-8 text-gray-200">
+    <div className="min-h-screen bg-[#0D0B1F] p-4 md:p-8 text-gray-200">
       <div
         className={`max-w-7xl mx-auto transition-opacity duration-700 ${
           contentVisible ? "opacity-100" : "opacity-0"
