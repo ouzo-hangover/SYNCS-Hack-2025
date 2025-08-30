@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const UserMenu = () => {
+// --- MODIFICATION 1: Accept props from App.js ---
+const UserMenu = ({ isLoggedIn, onNavigateToAccount, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
 
-  // This effect closes the menu if you click outside of it
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -17,20 +17,27 @@ const UserMenu = () => {
     };
   }, [menuRef]);
 
-  const handleLinkClick = (e) => {
-    e.preventDefault(); // Prevent the link from navigating
-    setIsOpen(false); // Close the menu on click
+  // --- MODIFICATION 2: Create handlers that call the prop functions ---
+  // These functions will execute the action (like logging out) AND close the menu.
+  const handleAccountClick = () => {
+    onNavigateToAccount();
+    setIsOpen(false);
   };
+
+  const handleLogoutClick = () => {
+    onLogout();
+    setIsOpen(false);
+  };
+
 
   return (
     <div className="relative" ref={menuRef}>
-      {/* Menu Button */}
+      {/* Menu Button (No changes here) */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center text-purple-300 hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-colors"
         aria-label="User menu"
       >
-        {/* A simple user icon SVG */}
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
         </svg>
@@ -44,9 +51,32 @@ const UserMenu = () => {
         style={{ transformOrigin: 'top right' }}
       >
         <div className="py-1">
-          <a href="#account" onClick={handleLinkClick} className="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white">Account Management</a>
-          <a href="#matches" onClick={handleLinkClick} className="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white">Matches</a>
-          <a href="#chat" onClick={handleLinkClick} className="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white">Chat</a>
+          {/* --- MODIFICATION 3: Conditionally render menu items --- */}
+          {isLoggedIn ? (
+            // Show these options if the user IS logged in
+            <>
+              <button
+                onClick={handleAccountClick}
+                className="w-full text-left block px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white"
+              >
+                Account Settings
+              </button>
+              <button
+                onClick={handleLogoutClick}
+                className="w-full text-left block px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            // Show this option if the user IS NOT logged in
+            <button
+              onClick={handleAccountClick}
+              className="w-full text-left block px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white"
+            >
+              Login / Sign Up
+            </button>
+          )}
         </div>
       </div>
     </div>
