@@ -14,3 +14,20 @@ Climate change, resource scarcity, and the evolving nature of work all raise the
 hai, short for "hobbies and interests", a new social platform to enable you to swap learning skills. Whether its a new language, new sport or hobby, you'll find it in hai.
 
 So come on, say hai, learn a new skill and make some new friends along the way.
+
+## Instructions
+To run this webpage, you will need to:
+```
+git clone https://github.com/ouzo-hangover/SYNCS-Hack-2025
+```
+
+Then change your directory
+```
+cd my-skill-app
+```
+
+Then install `npm` and run.
+```
+npm install
+npm start
+```
