@@ -1,235 +1,132 @@
 import React, { useState, useEffect } from 'react';
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, onSnapshot } from 'firebase/firestore';
-import { getAuth, signInWithCustomToken, signInAnonymously } from 'firebase/auth';
-
-// A utility function to convert a Firestore Timestamp to a formatted date string.
-const formatTimestamp = (timestamp) => {
-  if (!timestamp) return 'N/A';
-  const date = timestamp.toDate();
-  return date.toLocaleDateString() + ' at ' + date.toLocaleTimeString();
-};
-
-const SkillCard = ({ skill }) => (
-  <div className="bg-white rounded-xl shadow-lg p-6 m-4 w-full md:w-80 flex flex-col justify-between">
-    <div>
-      <h3 className="text-xl font-bold text-gray-800 mb-2">{skill.title}</h3>
-      <p className="text-sm font-semibold text-gray-600 mb-1">
-        {skill.type === 'teach' ? 'I can teach...' : 'I want to learn...'}
-      </p>
-      <p className="text-gray-700 text-sm mb-4">
-        {skill.description}
-      </p>
-    </div>
-    <div className="text-right text-xs text-gray-500 mt-auto">
-      <span className="font-medium text-gray-900">Posted by:</span> {skill.userId.substring(0, 8)}...
-      <p>
-        <span className="font-medium text-gray-900">Posted on:</span> {formatTimestamp(skill.createdAt)}
-      </p>
-    </div>
-  </div>
-);
+import SkillCard from './components/SkillCard';
 
 const App = () => {
+  // --- STATE MANAGEMENT ---
   const [skills, setSkills] = useState([]);
-  const [newSkillTitle, setNewSkillTitle] = useState('');
-  const [newSkillDesc, setNewSkillDesc] = useState('');
-  const [newSkillType, setNewSkillType] = useState('teach');
-  const [db, setDb] = useState(null);
-  const [userId, setUserId] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [view, setView] = useState('home'); // 'home' or 'results'
+  const [searchResults, setSearchResults] = useState([]);
+  const [contentVisible, setContentVisible] = useState(false);
 
-  // Initialize Firebase and set up authentication
+  // --- INITIAL DATA (Resets on refresh) ---
   useEffect(() => {
-    try {
-      // Replace with your actual Firebase configuration.
-      const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_AUTH_DOMAIN",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_STORAGE_BUCKET",
-        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-        appId: "YOUR_APP_ID"
-      };
-      
-      const app = initializeApp(firebaseConfig);
-      const firestoreDb = getFirestore(app);
-      const auth = getAuth(app);
-      
-      setDb(firestoreDb);
-
-      const handleAuth = async () => {
-        try {
-          // This project uses anonymous auth, so a custom token is not needed.
-          await signInAnonymously(auth);
-          setUserId(auth.currentUser.uid);
-        } catch (error) {
-          console.error("Firebase auth error:", error);
-          setUserId(crypto.randomUUID());
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      handleAuth();
-
-      return () => {
-        // Any cleanup if needed
-      };
-    } catch (error) {
-      console.error("Firebase initialization failed:", error);
-      setLoading(false);
-    }
+    const exampleSkills = [
+      { id: 1, userId: 'localuser', createdAt: new Date(), title: "Python for Beginners", description: "A basic introduction to Python programming.", type: "teach" },
+      { id: 2, userId: 'localuser', createdAt: new Date(), title: "React Component Basics", description: "Learn how to build your first React component.", type: "teach" },
+      { id: 3, userId: 'localuser', createdAt: new Date(), title: "Digital Marketing", description: "Looking to learn about SEO and content strategy.", type: "learn" },
+      { id: 4, userId: 'localuser', createdAt: new Date(), title: "Spanish Conversation", description: "Need a partner to practice speaking Spanish.", type: "learn" },
+      { id: 5, userId: 'localuser', createdAt: new Date(), title: "Data Structures", description: "I can help with linked lists and trees.", type: "teach" },
+      { id: 6, userId: 'localuser', createdAt: new Date(), title: "Web Design Principles", description: "Looking for tips on responsive design.", type: "learn" },
+    ];
+    setSkills(exampleSkills);
+    setTimeout(() => setContentVisible(true), 100);
   }, []);
 
-  // Fetch data from Firestore in real-time
-  useEffect(() => {
-    if (db && userId) {
-      // Use your actual project ID here
-      const appId = 'your-hackathon-app-id';
-      const skillsCollectionPath = `/artifacts/${appId}/public/data/skills`;
-      const q = collection(db, skillsCollectionPath);
-
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const skillsData = [];
-        querySnapshot.forEach((doc) => {
-          skillsData.push({ id: doc.id, ...doc.data() });
-        });
-        skillsData.sort((a, b) => b.createdAt?.seconds - a.createdAt?.seconds);
-        setSkills(skillsData);
-      }, (error) => {
-        console.error("Error getting real-time updates:", error);
-      });
-
-      return () => unsubscribe();
-    }
-  }, [db, userId]);
-
-  const handleSubmit = async (e) => {
+  // --- FUNCTIONS ---
+  // This runs when the user submits the search form.
+  const handleSearch = (e) => {
     e.preventDefault();
-    if (!newSkillTitle.trim() || !newSkillDesc.trim() || !db || !userId) return;
-
-    try {
-      const appId = 'your-hackathon-app-id';
-      const skillsCollectionPath = `/artifacts/${appId}/public/data/skills`;
-      await addDoc(collection(db, skillsCollectionPath), {
-        title: newSkillTitle,
-        description: newSkillDesc,
-        type: newSkillType,
-        userId: userId,
-        createdAt: new Date(),
-      });
-      setNewSkillTitle('');
-      setNewSkillDesc('');
-    } catch (e) {
-      console.error("Error adding document: ", e);
-    }
+    const results = skills.filter(skill =>
+      skill.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      skill.description.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setSearchResults(results);
+    setView('results'); // Switch to the results page view
   };
-  
-  const totalSkills = skills.length;
+
+  // This runs when the user clicks the 'Back' button on the results page.
+  const handleBackToHome = () => {
+    setSearchQuery(''); // Clear the search bar
+    setView('home'); // Switch back to the home page view
+  };
+
+  // --- STATS CALCULATION ---
   const teachSkillsCount = skills.filter(skill => skill.type === 'teach').length;
   const learnSkillsCount = skills.filter(skill => skill.type === 'learn').length;
 
+  // --- PAGE RENDER FUNCTIONS ---
+  // This function returns the JSX for the Home Page.
+  const renderHomePage = () => (
+    <>
+      {/* Stats Section */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div className="bg-slate-800 rounded-xl shadow-md p-6 text-center">
+          <h4 className="text-lg font-semibold text-purple-200">Total Skills</h4>
+          <p className="text-4xl font-bold text-blue-400 mt-2">{skills.length}</p>
+        </div>
+        <div className="bg-slate-800 rounded-xl shadow-md p-6 text-center">
+          <h4 className="text-lg font-semibold text-purple-200">To Teach</h4>
+          <p className="text-4xl font-bold text-green-400 mt-2">{teachSkillsCount}</p>
+        </div>
+        <div className="bg-slate-800 rounded-xl shadow-md p-6 text-center">
+          <h4 className="text-lg font-semibold text-purple-200">To Learn</h4>
+          <p className="text-4xl font-bold text-purple-400 mt-2">{learnSkillsCount}</p>
+        </div>
+      </div>
+      
+      {/* Search Bar */}
+      <div className="bg-slate-800 rounded-xl shadow-lg p-8">
+        <h2 className="text-3xl font-bold text-purple-200 mb-4 text-center">
+          What skills do you want to learn?
+        </h2>
+        <form onSubmit={handleSearch}>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search for skills and press Enter..."
+            className="mt-1 block w-full rounded-md border-gray-600 bg-slate-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-4 text-center text-lg transition-all duration-300 ease-in-out focus:ring-4 focus:ring-opacity-50"
+          />
+        </form>
+      </div>
+    </>
+  );
+
+  // This function returns the JSX for the Search Results Page.
+  const renderResultsPage = () => (
+    <>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-3xl font-bold text-purple-300">Search Results</h2>
+        <button
+          onClick={handleBackToHome}
+          className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-300 ease-in-out"
+        >
+          &larr; Back to Home
+        </button>
+      </div>
+      <div className="flex flex-wrap justify-center -m-4">
+        {searchResults.length > 0 ? (
+          searchResults.map((skill) => (
+            <SkillCard key={skill.id} skill={skill} />
+          ))
+        ) : (
+          <div className="text-center py-20 w-full animate-fadeIn">
+            <p className="text-lg text-gray-500">No matching skills found. Try a different search.</p>
+          </div>
+        )}
+      </div>
+    </>
+  );
+
+  // --- MAIN RETURN ---
   return (
-    <div className="min-h-screen bg-gray-100 font-sans p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
+    <div className="min-h-screen bg-slate-900 font-sans p-4 md:p-8 text-gray-200">
+      <div className={`max-w-7xl mx-auto transition-opacity duration-700 ${contentVisible ? 'opacity-100' : 'opacity-0'}`}>
+        
+        {/* Header Section (always visible) */}
         <header className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-2">
+          <h1 className="text-4xl md:text-5xl font-extrabold text-purple-300 mb-2">
             Skill Share
           </h1>
-          <p className="text-lg md:text-xl text-gray-600">
+          <p className="text-lg md:text-xl text-purple-100">
             Learn and teach new skills with your peers!
           </p>
         </header>
-
-        {/* Stats Section */}
-        <div className="flex flex-col md:flex-row justify-center items-center gap-4 mb-8">
-          <div className="bg-white rounded-xl shadow-md p-4 w-full md:w-1/3 text-center">
-            <h4 className="text-lg font-semibold text-gray-800">Total Skills Posted</h4>
-            <p className="text-3xl font-bold text-blue-600">{totalSkills}</p>
-          </div>
-          <div className="bg-white rounded-xl shadow-md p-4 w-full md:w-1/3 text-center">
-            <h4 className="text-lg font-semibold text-gray-800">Skills to Teach</h4>
-            <p className="text-3xl font-bold text-green-600">{teachSkillsCount}</p>
-          </div>
-          <div className="bg-white rounded-xl shadow-md p-4 w-full md:w-1/3 text-center">
-            <h4 className="text-lg font-semibold text-gray-800">Skills to Learn</h4>
-            <p className="text-3xl font-bold text-purple-600">{learnSkillsCount}</p>
-          </div>
-        </div>
-
-        {/* Skill Submission Form */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Add a Skill</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700">Skill Title</label>
-              <input
-                type="text"
-                id="title"
-                value={newSkillTitle}
-                onChange={(e) => setNewSkillTitle(e.target.value)}
-                placeholder="e.g., Python Basics"
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
-              />
-            </div>
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
-              <textarea
-                id="description"
-                rows="3"
-                value={newSkillDesc}
-                onChange={(e) => setNewSkillDesc(e.target.value)}
-                placeholder="Briefly describe the skill you are offering or looking for."
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
-              ></textarea>
-            </div>
-            <div>
-              <label htmlFor="type" className="block text-sm font-medium text-gray-700">Type</label>
-              <select
-                id="type"
-                value={newSkillType}
-                onChange={(e) => setNewSkillType(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
-              >
-                <option value="teach">I can teach...</option>
-                <option value="learn">I want to learn...</option>
-              </select>
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-300 ease-in-out"
-            >
-              Add Skill
-            </button>
-          </form>
-        </div>
-
-        {/* Loading and User ID section */}
-        <div className="text-center text-gray-500 mb-6">
-          {loading ? (
-            <p>Loading...</p>
-          ) : (
-            <p>Your User ID: <span className="font-mono text-gray-700">{userId}</span></p>
-          )}
-          <p className="text-sm">Share this ID with others to collaborate!</p>
-        </div>
-
-        {/* Skills List */}
-        <div className="flex flex-wrap justify-center">
-          {skills.length > 0 ? (
-            skills.map((skill) => (
-              <SkillCard key={skill.id} skill={skill} />
-            ))
-          ) : (
-            <div className="text-center py-20">
-              <p className="text-lg text-gray-500">No skills posted yet. Be the first to add one!</p>
-            </div>
-          )}
-        </div>
+        
+        {/* Conditionally render either the home page or the results page */}
+        {view === 'home' ? renderHomePage() : renderResultsPage()}
+        
       </div>
     </div>
   );
