@@ -9,7 +9,7 @@ const UpdateProfileForm = ({ currentUser, onUpdate, onBack }) => {
   const [name, setName] = useState('');
   const [interests, setInterests] = useState('');
   const [skills, setSkills] = useState([]);
-  const [location, setLocation] = useState({ lat: '', lng: '' });
+  const [city, setCity] = useState('');
 
   // This effect pre-fills the form when a logged-in user's data is available
   useEffect(() => {
@@ -17,14 +17,13 @@ const UpdateProfileForm = ({ currentUser, onUpdate, onBack }) => {
       setName(currentUser.name || '');
       setInterests(currentUser.interests || '');
       setSkills(currentUser.skills || []);
-      // FIX: Ensure location is always an object to prevent crashes
-      setLocation(currentUser.location || { lat: '', lng: '' });
+      setCity(currentUser.city || '');
     }
   }, [currentUser]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const updatedUser = { ...currentUser, name, interests, skills, location };
+    const updatedUser = { ...currentUser, name, interests, skills, city };
     onUpdate(updatedUser);
   };
 
@@ -54,16 +53,15 @@ const UpdateProfileForm = ({ currentUser, onUpdate, onBack }) => {
             {availableSkills.map(skill => <option key={skill} value={skill}>{skill}</option>)}
           </select>
         </div>
-        {/* Location Inputs */}
-        <div className="mb-6 grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-purple-200 mb-2" htmlFor="lat">Latitude</label>
-            <input type="number" step="any" id="lat" value={location.lat} onChange={e => setLocation({ ...location, lat: e.target.value ? parseFloat(e.target.value) : '' })} className="w-full p-3 bg-slate-700 rounded-md" placeholder="-27.470" />
-          </div>
-          <div>
-            <label className="block text-purple-200 mb-2" htmlFor="lng">Longitude</label>
-            <input type="number" step="any" id="lng" value={location.lng} onChange={e => setLocation({ ...location, lng: e.target.value ? parseFloat(e.target.value) : '' })} className="w-full p-3 bg-slate-700 rounded-md" placeholder="153.023" />
-          </div>
+        {/* City Input */}
+        <div className="mb-6">
+          <label className="block text-purple-200 mb-2" htmlFor="city">City</label>
+          <input 
+            type="text" 
+            id="city" 
+            value={city} 
+            onChange={e => setCity(e.target.value)} className="w-full p-3 bg-slate-700 rounded-md focus:ring-2 focus:ring-indigo-500" 
+            placeholder="e.g., Brisbane" />
         </div>
         <div className="flex items-center justify-between">
           <button type="button" onClick={onBack} className="text-gray-400 hover:text-white transition">&larr; Back to Home</button>

@@ -1,5 +1,7 @@
 const ffi = require("ffi-napi");
 const ref = require("ref-napi");
+const fs = require("fs");
+const path = require("path");
 
 const voidPtr = ref.refType(ref.types.void);
 const charPtr = ref.refType(ref.types.char);
@@ -28,9 +30,6 @@ const lib = ffi.Library(
     user_add_interest_and_write: ["int", [voidPtr, voidPtr]],
     user_remove_skill_and_write: ["int", [voidPtr, voidPtr]],
     user_remove_interest_and_write: ["int", [voidPtr, voidPtr]],
-
-    read_all_users_json: [charPtr, []],
-    string_free: ["void", [charPtr]],
   }
 );
 
@@ -39,10 +38,12 @@ function lastErr() {
   return p.isNull() ? "unknown error" : ref.readCString(p, 0);
 }
 
-// Optional: set absolute path for data.json
-// if (lib.set_data_path(Buffer.from('/abs/path/to/data.json\0'))) {
-//   throw new Error(lastErr());
-// }
+// The Rust library likely defaults to writing 'data.json' in the project root.
+// We'll explicitly set the path to 'public/data.json' to align with the React app.
+const dataPath = path.resolve(__dirname, "public", "data.json");
+if (lib.set_data_path(Buffer.from(dataPath + '\0'))) {
+  throw new Error(`Failed to set data path: ${lastErr()}`);
+}
 
 const user = lib.user_info_new_basic("AHHB", "Sydney", 0.0, 0.0, "afilepath");
 if (user.isNull()) throw new Error(lastErr());

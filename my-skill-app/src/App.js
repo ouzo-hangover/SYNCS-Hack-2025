@@ -4,6 +4,31 @@ import SkillsMap from "./components/SkillsMap";
 import UserMenu from "./components/UserMenu";
 import AccountSettings from "./components/AccountSettings";
 
+// Mock geocoding function to simulate backend processing
+const geocodeCity = async (city) => {
+  console.log(`Geocoding ${city}...`);
+  // In a real application, you would use a geocoding service.
+  // For this example, we'll use a mock lookup with a few Australian cities.
+  const cityLocations = {
+    "brisbane": { lat: -27.4705, lng: 153.0260 },
+    "sydney": { lat: -33.8688, lng: 151.2093 },
+    "melbourne": { lat: -37.8136, lng: 144.9631 },
+    "perth": { lat: -31.9505, lng: 115.8605 },
+    "adelaide": { lat: -34.9285, lng: 138.6007 },
+    "hobart": { lat: -42.8821, lng: 147.3272 },
+    "darwin": { lat: -12.4634, lng: 130.8456 },
+  };
+
+  const cityKey = city.toLowerCase();
+  if (cityLocations[cityKey]) {
+    return cityLocations[cityKey];
+  }
+
+  // Fallback for unknown cities
+  console.warn(`Could not find coordinates for ${city}. Using default.`);
+  return { lat: -27.48, lng: 153.01 }; // Default to Brisbane
+};
+
 const App = () => {
   // --- STATE MANAGEMENT ---
   const [skills, setSkills] = useState([]);
@@ -61,6 +86,7 @@ const App = () => {
       email: "alex.r@example.com",
       interests: "Hiking, JavaScript, Coffee",
       skills: ["React", "Python"],
+      city: "Brisbane",
       location: { lat: -27.48, lng: 153.01 },
     };
     setCurrentUser(mockUser);
@@ -84,16 +110,26 @@ const App = () => {
     setView("home");
   };
 
-  const handleRegister = (newUser) => {
+  const handleRegister = async (newUser) => {
     console.log("Registering new user:", newUser);
-    setCurrentUser(newUser);
+    if (newUser.city) {
+      const location = await geocodeCity(newUser.city);
+      setCurrentUser({ ...newUser, location });
+    } else {
+      setCurrentUser(newUser);
+    }
     setView("home");
     alert("Account created successfully!");
   };
 
-  const handleUpdateProfile = (updatedUser) => {
+  const handleUpdateProfile = async (updatedUser) => {
     console.log("Updating profile:", updatedUser);
-    setCurrentUser(updatedUser);
+    if (updatedUser.city && updatedUser.city !== currentUser?.city) {
+      const location = await geocodeCity(updatedUser.city);
+      setCurrentUser({ ...updatedUser, location });
+    } else {
+      setCurrentUser(updatedUser);
+    }
     setView("home");
     alert("Profile updated successfully!");
   };

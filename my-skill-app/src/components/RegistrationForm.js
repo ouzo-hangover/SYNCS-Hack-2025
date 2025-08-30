@@ -6,11 +6,12 @@ const RegistrationForm = ({ onRegister, onBack }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [city, setCity] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     // For a new user, skills, interests, and location can be empty initially
-    const newUser = { id: Date.now(), name, email, skills: [], interests: '', location: { lat: null, lng: null } };
+    const newUser = { id: Date.now(), name, email, city, skills: [], interests: '' };
     onRegister(newUser);
   };
 
@@ -29,9 +30,19 @@ const RegistrationForm = ({ onRegister, onBack }) => {
           <input type="email" id="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full p-3 bg-slate-700 rounded-md focus:ring-2 focus:ring-indigo-500" required />
         </div>
         {/* Password Input */}
-        <div className="mb-6">
+        <div className="mb-4">
           <label className="block text-purple-200 mb-2" htmlFor="password">Password</label>
           <input type="password" id="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-3 bg-slate-700 rounded-md focus:ring-2 focus:ring-indigo-500" required />
+        </div>
+        {/* City Input */}
+        <div className="mb-6">
+          <label className="block text-purple-200 mb-2" htmlFor="reg-city">City</label>
+          <input 
+            type="text" 
+            id="reg-city" 
+            value={city} 
+            onChange={e => setCity(e.target.value)} className="w-full p-3 bg-slate-700 rounded-md focus:ring-2 focus:ring-indigo-500" 
+            placeholder="e.g., Sydney" required />
         </div>
         <div className="flex items-center justify-between">
           <button type="button" onClick={onBack} className="text-gray-400 hover:text-white transition">&larr; Back to Home</button>          <button type="submit" className="bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-indigo-700">Create Account</button>
