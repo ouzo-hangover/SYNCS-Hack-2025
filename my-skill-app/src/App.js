@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import SkillCard from './components/SkillCard';
 import SkillsMap from './components/SkillsMap';
-import UserMenu from './components/UserMenu'; // Import the new menu component
+import UserMenu from './components/UserMenu';
+import AccountSettings from './components/AccountSettings';
 
 const App = () => {
   // --- STATE MANAGEMENT ---
-  // ... (all your existing state remains the same)
   const [skills, setSkills] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [view, setView] = useState('home'); // 'home', 'results', or 'why'
+  const [view, setView] = useState('home');
   const [searchResults, setSearchResults] = useState([]);
   const [contentVisible, setContentVisible] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   // --- INITIAL DATA & FUNCTIONS ---
-  // ... (all your existing functions remain the same)
   useEffect(() => {
     const exampleSkills = [
       { id: 1, userId: 'localuser', createdAt: new Date(), title: "Python for Beginners", description: "A basic introduction to Python programming.", type: "teach", location: { lat: -27.470, lng: 153.023 } },
@@ -24,6 +24,17 @@ const App = () => {
       { id: 6, userId: 'localuser', createdAt: new Date(), title: "Web Design Principles", description: "Looking for tips on responsive design.", type: "learn" },
     ];
     setSkills(exampleSkills);
+
+    const mockUser = {
+      id: 101,
+      name: 'Alex Rivera',
+      email: 'alex.r@example.com',
+      interests: 'Hiking, JavaScript, Coffee',
+      skills: ['React', 'Python'],
+      location: { lat: -27.48, lng: 153.01 }
+    };
+    setCurrentUser(mockUser);
+
     setTimeout(() => setContentVisible(true), 100);
   }, []);
 
@@ -42,11 +53,30 @@ const App = () => {
     setView('home');
   };
 
+  const handleRegister = (newUser) => {
+    console.log("Registering new user:", newUser);
+    setCurrentUser(newUser);
+    setView('home');
+    alert('Account created successfully!');
+  };
+
+  const handleUpdateProfile = (updatedUser) => {
+    console.log("Updating profile:", updatedUser);
+    setCurrentUser(updatedUser);
+    setView('home');
+    alert('Profile updated successfully!');
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setView('home');
+  };
+
   const skillsToTeach = skills.filter(skill => skill.type === 'teach');
   const skillsToLearn = skills.filter(skill => skill.type === 'learn');
 
   // --- PAGE RENDER FUNCTIONS ---
-  // ... (renderHomePage, renderResultsPage, renderWhyPage remain the same)
+  // --- FIX: Restored content for renderHomePage ---
   const renderHomePage = () => (
     <>
       {/* Search Bar */}
@@ -89,6 +119,7 @@ const App = () => {
     </>
   );
 
+  // --- FIX: Restored content for renderResultsPage ---
   const renderResultsPage = () => {
     const resultsToTeachOnMap = searchResults.filter(skill => skill.type === 'teach' && skill.location);
     return (
@@ -116,22 +147,20 @@ const App = () => {
     );
   };
   
+  // --- FIX: Restored content for renderWhyPage ---
   const renderWhyPage = () => (
     <div className="bg-slate-800 rounded-xl shadow-lg p-8 md:p-12 animate-fadeInUp text-left max-w-4xl mx-auto">
       <h2 className="text-3xl md:text-4xl font-bold text-purple-300 mb-4">The world is changing... so we need to move with it.</h2>
       <p className="text-lg text-gray-300 mb-8 leading-relaxed">
         Cities are no longer just places to live; they are the epicentres of culture, innovation, and human connection. But as they grow, they face urgent challenges in sustainability and the evolving nature of work.
       </p>
-      
       <h3 className="text-2xl font-semibold text-purple-200 mb-3">Our Mission: Powering the Future of Work</h3>
       <p className="text-gray-400 mb-8 leading-relaxed">
         In a future where remote work and the gig economy are the norm, continuous learning is key. The most valuable resource in our cities is shared human potential. Skill Share is our answer to the question of how we support a diverse, independent workforce.
       </p>
-      
       <p className="text-gray-300 font-semibold text-lg leading-relaxed">
         By creating a peer-to-peer network for learning and teaching, we empower citizens to adapt, upskill, and thrive. We're not just building an app; we're building a more resilient, interconnected, and knowledgeable community—one skill at a time.
       </p>
-
       <div className="text-center mt-12">
         <button onClick={handleBackToHome} className="bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-300 ease-in-out">
           &larr; Back to Home
@@ -140,19 +169,28 @@ const App = () => {
     </div>
   );
 
+  const renderAccountPage = () => (
+    <AccountSettings
+      currentUser={currentUser}
+      onRegister={handleRegister}
+      onUpdate={handleUpdateProfile}
+      onBack={handleBackToHome}
+    />
+  );
+
+
   // --- MAIN RETURN ---
   return (
     <div className="min-h-screen bg-slate-900 font-sans p-4 md:p-8 text-gray-200">
       <div className={`max-w-7xl mx-auto transition-opacity duration-700 ${contentVisible ? 'opacity-100' : 'opacity-0'}`}>
-        
-        {/* --- NEW: Wrapper for Header and User Menu --- */}
         <div className="relative">
-          {/* User Menu is positioned absolutely within this relative container */}
           <div className="absolute top-0 right-0 z-10">
-            <UserMenu />
+            <UserMenu 
+              isLoggedIn={!!currentUser} 
+              onNavigateToAccount={() => setView('account')}
+              onLogout={handleLogout}
+            />
           </div>
-
-          {/* Header Section */}
           <header className="text-center mb-10">
             <h1 className="text-4xl md:text-5xl font-extrabold text-purple-300 mb-2">
               Skill Share
@@ -160,9 +198,8 @@ const App = () => {
             <p className="text-lg md:text-xl text-purple-100">
               Learn and teach new skills with your peers!
             </p>
-            {/* 'Why?' button */}
             {view === 'home' && (
-               <button 
+              <button 
                 onClick={() => setView('why')} 
                 className="mt-4 bg-transparent border border-purple-400 text-purple-300 font-bold py-2 px-6 rounded-lg hover:bg-purple-400 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition duration-300 ease-in-out animate-fadeInUp-600"
               >
@@ -172,10 +209,10 @@ const App = () => {
           </header>
         </div>
         
-        {/* Conditionally render the correct page view */}
         {view === 'home' && renderHomePage()}
         {view === 'results' && renderResultsPage()}
         {view === 'why' && renderWhyPage()}
+        {view === 'account' && renderAccountPage()}
         
       </div>
     </div>
