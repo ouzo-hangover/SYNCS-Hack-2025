@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Page transition styles */
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+        }
+
+        .page.profile-page {
+            transform: translateX(0);
+        }
+
+        .page.profile-page.slide-out {
+            transform: translateX(-100%);
+        }
+
+        .page.chat-page {
+            transform: translateX(100%);
+            background: white;
+        }
+
+        .page.chat-page.slide-in {
+            transform: translateX(0);
+        }
+
+        .sidebar {
+            width: 25%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-header p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .profile-list {
+            padding: 1rem 0;
+        }
+
+        .profile-card {
+            padding: 1.5rem;
+            margin: 0.5rem 1rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .profile-card:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateX(5px);
+        }
+
+        .profile-card.active {
+            background: rgba(255,255,255,0.25);
+            border-color: rgba(255,255,255,0.4);
+            transform: translateX(5px);
+        }
+
+        .profile-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-title {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-preview {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+
+        .main-content {
+            width: 75%;
+            background: white;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .profile-detail {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .detail-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #e1e8ed;
+        }
+
+        .detail-name {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .detail-title {
+            font-size: 1.3rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .detail-contact {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.95rem;
+            color: #7f8c8d;
+            align-items: center;
+        }
+
+        .detail-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        .section-content {
+            line-height: 1.6;
+            color: #34495e;
+            font-size: 1rem;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .skill-category {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .skill-category h4 {
+            color: #2c3e50;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+        }
+
+        .skill-list {
+            list-style: none;
+        }
+
+        .skill-list li {
+            padding: 0.3rem 0;
+            color: #555;
+            position: relative;
+            padding-left: 1rem;
+        }
+
+        .skill-list li::before {
+            content: '•';
+            color: #667eea;
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .interests-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .interest-tag {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .placeholder {
+            text-align: center;
+            color: #95a5a6;
+            padding: 4rem 2rem;
+        }
+
+        .placeholder h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .bubble {
+            display: inline-block;
+            background: linear-gradient(135deg, #87CEEB 0%, #4682B4 100%);
+            border-radius: 50px;
+            padding: 12px 24px;
+            color: #ffffff;
+            text-align: center;
+            font-weight: 500;
+            font-size: 14px;
+            line-height: 1.2;
+            box-shadow: 
+                0 4px 15px rgba(70, 130, 180, 0.3),
+                0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            top: -12px;
+            overflow: hidden;
+        }
+
+        .bubble::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .bubble:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 
+                0 8px 25px rgba(70, 130, 180, 0.4),
+                0 4px 12px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, #87CEEB 0%, #5F9EA0 100%);
+        }
+
+        .bubble:hover::before {
+            left: 100%;
+        }
+
+        .bubble:active {
+            transform: translateY(-1px) scale(0.98);
+            transition: all 0.1s ease;
+        }
+
+        /* Chat Page Styles */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
+            background: #f8f9fa;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .back-button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-1px);
+        }
+
+        .chat-title {
+            flex: 1;
+        }
+
+        .chat-title h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .chat-title p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 1rem 1.5rem;
+            border-radius: 20px;
+            word-wrap: break-word;
+            animation: fadeInMessage 0.3s ease-out;
+        }
+
+        .message.sent {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.received {
+            align-self: flex-start;
+            background: white;
+            color: #333;
+            border: 1px solid #e1e8ed;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message-time {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-top: 0.5rem;
+        }
+
+        .chat-input-container {
+            padding: 1.5rem 2rem;
+            background: white;
+            border-top: 1px solid #e1e8ed;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 25px;
+            font-size: 1rem;
+            resize: none;
+            max-height: 120px;
+            min-height: 50px;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .send-button:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        @keyframes fadeInMessage {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+        }
+
+        .main-content::-webkit-scrollbar, .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .main-content::-webkit-scrollbar-track, .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .main-content::-webkit-scrollbar-thumb, .chat-messages::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: 40vh;
+            }
+            
+            .main-content {
+                width: 100%;
+                height: 60vh;
+            }
+
+            .detail-contact {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .skills-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .message {
+                max-width: 85%;
+            }
+
+            .chat-input-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Profile View Page -->
+        <div class="page profile-page" id="profilePage">
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h2>Profile Matches</h2>
+                    <p>Click on any profile to view details</p>
+                </div>
+                <div class="profile-list" id="profileList">
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="profile-detail" id="profileDetail">
+                    <div class="placeholder">
+                        <h3>Welcome to your potential matches</h3>
+                        <p>Select a profile from the left sidebar to view detailed information</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Page -->
+        <div class="page chat-page" id="chatPage">
+            <div class="chat-container">
+                <div class="chat-header">
+                    <button class="back-button" onclick="goBackToProfiles()">← Back</button>
+                    <div class="chat-title">
+                        <h2 id="chatPersonName">Chat</h2>
+                        <p id="chatPersonTitle">Online</p>
+                    </div>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Messages will be dynamically added here -->
+                </div>
+
+                <div class="chat-input-container">
+                    <textarea 
+                        id="messageInput" 
+                        class="chat-input" 
+                        placeholder="Type your message..."
+                        rows="1"
+                    ></textarea>
+                    <button class="send-button" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample profile data
+        const profiles = [
+            {
+                id: 1,
+                name: "Sarah Chen",
+                title: "Senior Software Engineer",
+                preview: "Full-stack developer with expertise in React and Node.js. Passionate about clean code and user experience.",
+                email: "sarah.chen@company.com",
+                phone: "+1 (555) 123-4567",
+                bio: "Sarah is a highly skilled software engineer with over 6 years of experience in full-stack development. She has led multiple successful projects and is known for her attention to detail and collaborative approach. Sarah is passionate about creating intuitive user experiences and writing maintainable code.",
+                skills: {
+                    "Programming Languages": ["JavaScript", "Python", "TypeScript", "Java"],
+                    "Frontend": ["React", "Vue.js", "HTML5", "CSS3", "Sass"],
+                    "Backend": ["Node.js", "Express", "Django", "REST APIs"],
+                    "Databases": ["PostgreSQL", "MongoDB", "Redis"],
+                    "Tools & Platforms": ["Git", "Docker", "AWS", "Jenkins"]
+                },
+                interests: ["Machine Learning", "UI/UX Design", "Open Source", "Photography", "Hiking"]
+            },
+            {
+                id: 2,
+                name: "Marcus Rodriguez",
+                title: "Product Manager",
+                preview: "Strategic product leader with a background in data analytics. Drives product vision and cross-functional collaboration.",
+                email: "marcus.rodriguez@company.com",
+                phone: "+1 (555) 234-5678",
+                bio: "Marcus brings 8 years of product management experience, combining technical depth with business acumen. He has successfully launched 15+ products and has a proven track record of driving user engagement and revenue growth. Marcus is known for his data-driven approach and ability to translate complex technical concepts into clear business value.",
+                skills: {
+                    "Product Strategy": ["Roadmap Planning", "Market Research", "Competitive Analysis"],
+                    "Analytics": ["SQL", "Tableau", "Google Analytics", "A/B Testing"],
+                    "Leadership": ["Cross-functional Teams", "Stakeholder Management", "Agile/Scrum"],
+                    "Technical": ["API Design", "System Architecture", "Data Modeling"]
+                },
+                interests: ["Behavioral Economics", "Data Visualization", "Startups", "Travel", "Cooking"]
+            },
+            {
+                id: 3,
+                name: "Emily Watson",
+                title: "UX/UI Designer",
+                preview: "Creative designer focused on human-centered design. Specializes in mobile experiences and design systems.",
+                email: "emily.watson@company.com",
+                phone: "+1 (555) 345-6789",
+                bio: "Emily is a passionate UX/UI designer with 5 years of experience creating beautiful and functional digital experiences. She has worked with startups and Fortune 500 companies, always putting the user at the center of her design process. Emily is particularly skilled at translating complex user needs into simple, elegant solutions.",
+                skills: {
+                    "Design Tools": ["Figma", "Sketch", "Adobe Creative Suite", "Principle"],
+                    "UX Methods": ["User Research", "Wireframing", "Prototyping", "Usability Testing"],
+                    "Frontend": ["HTML", "CSS", "JavaScript", "React"],
+                    "Specialties": ["Mobile Design", "Design Systems", "Accessibility", "Animation"]
+                },
+                interests: ["Psychology", "Typography", "Sustainable Design", "Art Museums", "Yoga"]
+            },
+            {
+                id: 4,
+                name: "David Kim",
+                title: "DevOps Engineer",
+                preview: "Infrastructure specialist with expertise in cloud platforms and automation. Ensures scalable and reliable systems.",
+                email: "david.kim@company.com",
+                phone: "+1 (555) 456-7890",
+                bio: "David is a seasoned DevOps engineer with 7 years of experience building and maintaining scalable infrastructure. He has expertise in cloud platforms, containerization, and CI/CD pipelines. David is passionate about automation and has helped multiple teams improve their deployment processes and system reliability.",
+                skills: {
+                    "Cloud Platforms": ["AWS", "Google Cloud", "Azure", "Digital Ocean"],
+                    "Containerization": ["Docker", "Kubernetes", "Helm"],
+                    "Infrastructure": ["Terraform", "Ansible", "CloudFormation"],
+                    "Monitoring": ["Prometheus", "Grafana", "ELK Stack", "New Relic"],
+                    "Languages": ["Python", "Bash", "Go", "YAML"]
+                },
+                interests: ["Home Automation", "Cybersecurity", "Rock Climbing", "Gaming", "Coffee"]
+            }
+        ];
+
+        let currentProfileId = null;
+        let currentChatProfile = null;
+        let messages = {}; // Store messages for each profile
+
+        // Initialize sample messages for demonstration
+        function initializeMessages() {
+            profiles.forEach(profile => {
+                messages[profile.id] = [
+                    {
+                        text: `Hi! I saw your profile and thought we might have some interesting things to discuss about ${profile.interests[0].toLowerCase()}.`,
+                        sender: 'received',
+                        time: new Date(Date.now() - 3600000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                    }
+                ];
+            });
+        }
+
+        // Initialize the page
+        function initializePage() {
+            renderProfileList();
+            initializeMessages();
+        }
+
+        // Render the profile list in the sidebar
+        function renderProfileList() {
+            const profileList = document.getElementById('profileList');
+            profileList.innerHTML = '';
+
+            profiles.forEach(profile => {
+                const profileCard = document.createElement('div');
+                profileCard.className = 'profile-card';
+                profileCard.dataset.profileId = profile.id;
+                
+                profileCard.innerHTML = `
+                    <div class="profile-name">${profile.name}</div>
+                    <div class="profile-title">${profile.title}</div>
+                    <div class="profile-preview">${profile.preview}</div>
+                `;
+
+                profileCard.addEventListener('click', () => selectProfile(profile.id));
+                profileList.appendChild(profileCard);
+            });
+        }
+
+        // Handle profile selection
+        function selectProfile(profileId) {
+            // Update active state in sidebar
+            document.querySelectorAll('.profile-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            document.querySelector(`[data-profile-id="${profileId}"]`).classList.add('active');
+
+            // Find and display the selected profile
+            const profile = profiles.find(p => p.id === profileId);
+            if (profile) {
+                renderProfileDetail(profile);
+                currentProfileId = profileId;
+            }
+        }
+
+        // Render detailed profile view
+        function renderProfileDetail(profile) {
+            const profileDetail = document.getElementById('profileDetail');
+            
+            // Build skills HTML
+            let skillsHTML = '<div class="skills-grid">';
+            for (const [category, skillList] of Object.entries(profile.skills)) {
+                skillsHTML += `
+                    <div class="skill-category">
+                        <h4>${category}</h4>
+                        <ul class="skill-list">
+                            ${skillList.map(skill => `<li>${skill}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            skillsHTML += '</div>';
+
+            // Build interests HTML
+            const interestsHTML = `
+                <div class="interests-tags">
+                    ${profile.interests.map(interest => `<span class="interest-tag">${interest}</span>`).join('')}
+                </div>
+            `;
+
+            profileDetail.innerHTML = `
+                <div class="detail-header">
+                    <h1 class="detail-name">${profile.name}</h1>
+                    <h2 class="detail-title">${profile.title}</h2>
+                    <div class="detail-contact">
+                        <span>📧 ${profile.email}</span>
+                        <span>📱 ${profile.phone}</span>
+                        <a class="bubble" href="http://localhost:3000/chat/conv-me-123-${profile.id}">Chat With Me</a> #SANTI CHANGES
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3 class="section-title">About</h3>
+                    <div class="section-content">
+                        <p>${profile.bio}</p>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3 class="section-title">Skills & Expertise</h3>
+                    <div class="section-content">
+                        ${skillsHTML}
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3 class="section-title">Interests</h3>
+                    <div class="section-content">
+                        ${interestsHTML}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Open chat with selected profile
+        function openChat(profileId) {
+            const profile = profiles.find(p => p.id === profileId);
+            if (!profile) return;
+
+            currentChatProfile = profile;
+            
+            // Update chat header
+            document.getElementById('chatPersonName').textContent = `Chat with ${profile.name}`;
+            document.getElementById('chatPersonTitle').textContent = profile.title;
+
+            // Load existing messages
+            loadChatMessages(profileId);
+
+            // Animate page transition
+            const profilePage = document.getElementById('profilePage');
+            const chatPage = document.getElementById('chatPage');
+
+            profilePage.classList.add('slide-out');
+            chatPage.classList.add('slide-in');
+
+            // Clear input focus
+            setTimeout(() => {
+                document.getElementById('messageInput').focus();
+            }, 600);
+        }
+
+        // Go back to profiles view
+        function goBackToProfiles() {
+            const profilePage = document.getElementById('profilePage');
+            const chatPage = document.getElementById('chatPage');
+
+            profilePage.classList.remove('slide-out');
+            chatPage.classList.remove('slide-in');
+        }
+
+        // Load chat messages for a profile
+        function loadChatMessages(profileId) {
+            const chatMessages = document.getElementById('chatMessages');
+            const profileMessages = messages[profileId] || [];
+
+            chatMessages.innerHTML = '';
+
+            profileMessages.forEach(message => {
+                addMessageToDOM(message.text, message.sender, message.time);
+            });
+
+            // Scroll to bottom
+            setTimeout(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 100);
+        }
+
+        // Add message to DOM
+        function addMessageToDOM(text, sender, time) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            messageDiv.innerHTML = `
+                <div>${text}</div>
+                <div class="message-time">${time}</div>
+            `;
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Send message
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const text = messageInput.value.trim();
+
+            if (!text || !currentChatProfile) return;
+
+            const now = new Date();
+            const time = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+            // Add to messages storage
+            if (!messages[currentChatProfile.id]) {
+                messages[currentChatProfile.id] = [];
+            }
+            
+            messages[currentChatProfile.id].push({
+                text: text,
+                sender: 'sent',
+                time: time
+            });
+
+            // Add to DOM
+            addMessageToDOM(text, 'sent', time);
+
+            // Clear input
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+
+            // Simulate a response after a short delay
+            setTimeout(() => {
+                simulateResponse();
+            }, 1000 + Math.random() * 2000);
+        }
+
+        // Simulate a response from the other person
+        function simulateResponse() {
+            if (!currentChatProfile) return;
+
+            const responses = [
+                "That's really interesting! I'd love to hear more about your perspective on that.",
+                "Thanks for sharing! I have some thoughts on that too.",
+                "That's a great point. Have you considered the implications of that approach?",
+                "I appreciate you bringing that up. It's something I've been thinking about lately.",
+                "Absolutely! I think we're on the same wavelength here.",
+                "That's fascinating. Could you elaborate on that a bit more?"
+            ];
+
+            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+            // Add to messages storage
+            messages[currentChatProfile.id].push({
+                text: randomResponse,
+                sender: 'received',
+                time: time
+            });
+
+            // Add to DOM
+            addMessageToDOM(randomResponse, 'received', time);
+        }
+
+        // Handle Enter key in chat input
+        document.addEventListener('DOMContentLoaded', function() {
+            const messageInput = document.getElementById('messageInput');
+            
+            messageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // Auto-resize textarea
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
+
+            initializePage();
+        });
+    </script>
+</body>
+</html>

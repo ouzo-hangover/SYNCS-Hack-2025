@@ -1,0 +1,17 @@
+
+.scrollable-flex-list {
+    display: flex;
+    flex-direction: column;
+    width: 25%; /* Added this line */
+    height: 200px; /* Or max-height */
+    overflow-y: auto; /* Or scroll */
+    border: 1px solid #ccc; /* For visualization */
+    padding: 10px;
+}
+
+.list-item {
+    padding: 8px;
+    margin-bottom: 5px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+}
