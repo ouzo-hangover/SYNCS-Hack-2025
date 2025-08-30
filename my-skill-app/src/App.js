@@ -15,60 +15,45 @@ const App = () => {
 
   // --- INITIAL DATA & FUNCTIONS ---
   useEffect(() => {
-    const exampleSkills = [
-      {
-        id: 1,
-        userId: "localuser",
-        createdAt: new Date(),
-        title: "Python for Beginners",
-        description: "A basic introduction to Python programming.",
-        type: "teach",
-        location: { lat: -27.47, lng: 153.023 },
-      },
-      {
-        id: 2,
-        userId: "localuser",
-        createdAt: new Date(),
-        title: "React Component Basics",
-        description: "Learn how to build your first React component.",
-        type: "teach",
-        location: { lat: -27.5, lng: 153.03 },
-      },
-      {
-        id: 3,
-        userId: "localuser",
-        createdAt: new Date(),
-        title: "Digital Marketing",
-        description: "Looking to learn about SEO and content strategy.",
-        type: "learn",
-      },
-      {
-        id: 4,
-        userId: "localuser",
-        createdAt: new Date(),
-        title: "Spanish Conversation",
-        description: "Need a partner to practice speaking Spanish.",
-        type: "learn",
-      },
-      {
-        id: 5,
-        userId: "localuser",
-        createdAt: new Date(),
-        title: "Data Structures",
-        description: "I can help with linked lists and trees.",
-        type: "teach",
-        location: { lat: -27.46, lng: 153.015 },
-      },
-      {
-        id: 6,
-        userId: "localuser",
-        createdAt: new Date(),
-        title: "Web Design Principles",
-        description: "Looking for tips on responsive design.",
-        type: "learn",
-      },
-    ];
-    setSkills(exampleSkills);
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/data.json');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+
+        let skillIdCounter = 1;
+        const loadedSkills = data.users.flatMap(user => {
+          const teachingSkills = user.skills.map(skill => ({
+            id: skillIdCounter++,
+            userId: user.id,
+            createdAt: new Date(),
+            title: skill.name,
+            description: `An offer to teach ${skill.name} by ${user.name}.`,
+            type: 'teach',
+            location: { lat: user.location.lat, lng: user.location.long } // Map long to lng
+          }));
+
+          const learningInterests = user.interests.map(interest => ({
+            id: skillIdCounter++,
+            userId: user.id,
+            createdAt: new Date(),
+            title: interest.name,
+            description: `${user.name} is looking to learn about ${interest.name}.`,
+            type: 'learn',
+          }));
+
+          return [...teachingSkills, ...learningInterests];
+        });
+
+        setSkills(loadedSkills);
+      } catch (error) {
+        console.error("Could not load skill data from data.json:", error);
+      }
+    };
+
+    fetchData();
 
     const mockUser = {
       id: 101,
@@ -282,7 +267,7 @@ const App = () => {
 
   // --- MAIN RETURN ---
   return (
-    <div className="min-h-screen bg-slate-900 font-sans p-4 md:p-8 text-gray-200">
+    <div className="min-h-screen bg-slate-900 p-4 md:p-8 text-gray-200">
       <div
         className={`max-w-7xl mx-auto transition-opacity duration-700 ${
           contentVisible ? "opacity-100" : "opacity-0"
@@ -296,22 +281,6 @@ const App = () => {
               onLogout={handleLogout}
             />
           </div>
-          <header className="text-center mb-10">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-purple-300 mb-2">
-              Skill Share
-            </h1>
-            <p className="text-lg md:text-xl text-purple-100">
-              Learn and teach new skills with your peers!
-            </p>
-            {view === "home" && (
-              <button
-                onClick={() => setView("why")}
-                className="mt-4 bg-transparent border border-purple-400 text-purple-300 font-bold py-2 px-6 rounded-lg hover:bg-purple-400 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition duration-300 ease-in-out animate-fadeInUp-600"
-              >
-                Why?
-              </button>
-            )}
-          </header>
         </div>
 
         {view === "home" && renderHomePage()}

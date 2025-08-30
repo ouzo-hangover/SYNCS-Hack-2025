@@ -6,6 +6,8 @@
     <title>Matches</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -162,7 +164,8 @@
 
         .detail-contact {
             display: flex;
-            gap: 2rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
             font-size: 0.95rem;
             color: #94a3b8; /* gray-400 */
             align-items: center;
@@ -537,9 +540,10 @@
 
             <div class="main-content">
                 <div class="profile-detail" id="profileDetail">
-                    <div class="placeholder">
-                        <h3>Welcome to your potential matches</h3>
-                        <p>Select a profile from the left sidebar to view detailed information</p>
+                    <div class="placeholder" id="mapPlaceholder">
+                        <h3 style="margin-bottom: 1rem; font-size: 1.5rem; color: #e9d5ff;">Matches on the Map</h3>
+                        <p style="margin-bottom: 1.5rem;">Click a marker to view a profile, or select one from the sidebar.</p>
+                        <div id="map" style="height: 500px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);"></div>
                     </div>
                 </div>
             </div>
@@ -573,83 +577,17 @@
         </div>
     </div>
 
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
-        // Sample profile data
-        const profiles = [
-            {
-                id: 1,
-                name: "Sarah Chen",
-                title: "Senior Software Engineer",
-                preview: "Full-stack developer with expertise in React and Node.js. Passionate about clean code and user experience.",
-                email: "sarah.chen@company.com",
-                phone: "+1 (555) 123-4567",
-                bio: "Sarah is a highly skilled software engineer with over 6 years of experience in full-stack development. She has led multiple successful projects and is known for her attention to detail and collaborative approach. Sarah is passionate about creating intuitive user experiences and writing maintainable code.",
-                skills: {
-                    "Programming Languages": ["JavaScript", "Python", "TypeScript", "Java"],
-                    "Frontend": ["React", "Vue.js", "HTML5", "CSS3", "Sass"],
-                    "Backend": ["Node.js", "Express", "Django", "REST APIs"],
-                    "Databases": ["PostgreSQL", "MongoDB", "Redis"],
-                    "Tools & Platforms": ["Git", "Docker", "AWS", "Jenkins"]
-                },
-                interests: ["Machine Learning", "UI/UX Design", "Open Source", "Photography", "Hiking"]
-            },
-            {
-                id: 2,
-                name: "Marcus Rodriguez",
-                title: "Product Manager",
-                preview: "Strategic product leader with a background in data analytics. Drives product vision and cross-functional collaboration.",
-                email: "marcus.rodriguez@company.com",
-                phone: "+1 (555) 234-5678",
-                bio: "Marcus brings 8 years of product management experience, combining technical depth with business acumen. He has successfully launched 15+ products and has a proven track record of driving user engagement and revenue growth. Marcus is known for his data-driven approach and ability to translate complex technical concepts into clear business value.",
-                skills: {
-                    "Product Strategy": ["Roadmap Planning", "Market Research", "Competitive Analysis"],
-                    "Analytics": ["SQL", "Tableau", "Google Analytics", "A/B Testing"],
-                    "Leadership": ["Cross-functional Teams", "Stakeholder Management", "Agile/Scrum"],
-                    "Technical": ["API Design", "System Architecture", "Data Modeling"]
-                },
-                interests: ["Behavioral Economics", "Data Visualization", "Startups", "Travel", "Cooking"]
-            },
-            {
-                id: 3,
-                name: "Emily Watson",
-                title: "UX/UI Designer",
-                preview: "Creative designer focused on human-centered design. Specializes in mobile experiences and design systems.",
-                email: "emily.watson@company.com",
-                phone: "+1 (555) 345-6789",
-                bio: "Emily is a passionate UX/UI designer with 5 years of experience creating beautiful and functional digital experiences. She has worked with startups and Fortune 500 companies, always putting the user at the center of her design process. Emily is particularly skilled at translating complex user needs into simple, elegant solutions.",
-                skills: {
-                    "Design Tools": ["Figma", "Sketch", "Adobe Creative Suite", "Principle"],
-                    "UX Methods": ["User Research", "Wireframing", "Prototyping", "Usability Testing"],
-                    "Frontend": ["HTML", "CSS", "JavaScript", "React"],
-                    "Specialties": ["Mobile Design", "Design Systems", "Accessibility", "Animation"]
-                },
-                interests: ["Psychology", "Typography", "Sustainable Design", "Art Museums", "Yoga"]
-            },
-            {
-                id: 4,
-                name: "David Kim",
-                title: "DevOps Engineer",
-                preview: "Infrastructure specialist with expertise in cloud platforms and automation. Ensures scalable and reliable systems.",
-                email: "david.kim@company.com",
-                phone: "+1 (555) 456-7890",
-                bio: "David is a seasoned DevOps engineer with 7 years of experience building and maintaining scalable infrastructure. He has expertise in cloud platforms, containerization, and CI/CD pipelines. David is passionate about automation and has helped multiple teams improve their deployment processes and system reliability.",
-                skills: {
-                    "Cloud Platforms": ["AWS", "Google Cloud", "Azure", "Digital Ocean"],
-                    "Containerization": ["Docker", "Kubernetes", "Helm"],
-                    "Infrastructure": ["Terraform", "Ansible", "CloudFormation"],
-                    "Monitoring": ["Prometheus", "Grafana", "ELK Stack", "New Relic"],
-                    "Languages": ["Python", "Bash", "Go", "YAML"]
-                },
-                interests: ["Home Automation", "Cybersecurity", "Rock Climbing", "Gaming", "Coffee"]
-            }
-        ];
-
+        let profiles = []; // This will be populated from data.json
         let currentProfileId = null;
         let currentChatProfile = null;
         let messages = {}; // Store messages for each profile
 
         // Initialize sample messages for demonstration
         function initializeMessages() {
+            if (!profiles.length) return;
             profiles.forEach(profile => {
                 messages[profile.id] = [
                     {
@@ -662,15 +600,85 @@
         }
 
         // Initialize the page
-        function initializePage() {
-            renderProfileList();
-            initializeMessages();
+        async function initializePage() {
+            try {
+                const response = await fetch('/data.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                // Map the data from data.json to the format expected by this page
+                profiles = data.users.map((user, index) => {
+                    const userSkills = user.skills.map(s => s.name);
+                    const userInterests = user.interests.map(i => i.name);
+
+                    return {
+                        id: user.id,
+                        name: user.name,
+                        locationName: user.location_name,
+                        location: user.location,
+                        title: userSkills.length > 0 ? `${userSkills[0]} Enthusiast` : "Learner & Teacher",
+                        preview: `Interested in ${userInterests.join(', ')}. Skilled in ${userSkills.join(', ')}. Based in ${user.location_name}.`,
+                        email: `${user.name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
+                        phone: `+61 4${String(Math.floor(10 + Math.random() * 90)).padStart(2, '0')} ${String(Math.floor(100 + Math.random() * 900)).padStart(3, '0')} ${String(Math.floor(100 + Math.random() * 900)).padStart(3, '0')}`,
+                        bio: `${user.name} is a passionate individual from ${user.location_name}, eager to share knowledge in ${userSkills.join(', ')} and learn more about ${userInterests.join(', ')}.`,
+                        skills: {
+                            "Skills to Share": userSkills,
+                        },
+                        interests: userInterests
+                    };
+                });
+
+                renderProfileList();
+                initializeMessages();
+                initializeMap();
+
+                // Check for a matchId in the URL and select the profile
+                const urlParams = new URLSearchParams(window.location.search);
+                const matchId = urlParams.get('matchId');
+                if (matchId) {
+                    selectProfile(parseInt(matchId, 10));
+                }
+            } catch (error) {
+                console.error("Could not load profile data:", error);
+                const profileList = document.getElementById('profileList');
+                profileList.innerHTML = '<p style="color: #f87171; padding: 1.5rem;">Failed to load matches. Please try again later.</p>';
+            }
+        }
+
+        // Initialize the map with profile markers
+        function initializeMap() {
+            if (!profiles.length || typeof L === 'undefined') return;
+
+            const mapElement = document.getElementById('map');
+            if (!mapElement) return;
+
+            // Center of Australia
+            const map = L.map('map').setView([-25.2744, 133.7751], 4);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            profiles.forEach(profile => {
+                if (profile.location && profile.location.lat && profile.location.long) {
+                    const marker = L.marker([profile.location.lat, profile.location.long]).addTo(map);
+                    marker.bindPopup(`
+                        <div style="text-align: center; font-family: 'Lora', serif;">
+                            <b>${profile.name}</b><br/>${profile.locationName}<br/><br/>
+                            <a href="#" onclick="selectProfile(${profile.id}); return false;" style="color: #8b5cf6; text-decoration: none; font-weight: bold;">View Profile</a>
+                        </div>`);
+                }
+            });
         }
 
         // Render the profile list in the sidebar
         function renderProfileList() {
             const profileList = document.getElementById('profileList');
             profileList.innerHTML = '';
+
+            if (!profiles.length) return;
 
             profiles.forEach(profile => {
                 const profileCard = document.createElement('div');
@@ -734,6 +742,7 @@
                     <h1 class="detail-name">${profile.name}</h1>
                     <h2 class="detail-title">${profile.title}</h2>
                     <div class="detail-contact">
+                        <span>📍 ${profile.locationName}</span>
                         <span>📧 ${profile.email}</span>
                         <span>📱 ${profile.phone}</span>
                         <a class="bubble" href="#" onclick="openChat(${profile.id}); return false;">Chat With Me</a>

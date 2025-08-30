@@ -1,0 +1,148 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Alex Harrison",
+      "location_name": "Sydney",
+      "location": {
+        "lat": -33.8688,
+        "long": 151.2093
+      },
+      "photo": "photos/alex.jpg",
+      "skills": [
+        {
+          "name": "Python"
+        }
+      ],
+      "interests": [
+        {
+          "name": "Data Science"
+        },
+        {
+          "name": "Rock Climbing"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Brianna Miller",
+      "location_name": "Melbourne",
+      "location": {
+        "lat": -37.8136,
+        "long": 144.9631
+      },
+      "photo": "photos/brianna.jpg",
+      "skills": [
+        {
+          "name": "Graphic Design"
+        },
+        {
+          "name": "UI/UX"
+        }
+      ],
+      "interests": [
+        {
+          "name": "Photography"
+        },
+        {
+          "name": "Yoga"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Charlie Davis",
+      "location_name": "Brisbane",
+      "location": {
+        "lat": -27.4705,
+        "long": 153.0260
+      },
+      "photo": "photos/charlie.jpg",
+      "skills": [
+        {
+          "name": "Digital Marketing"
+        }
+      ],
+      "interests": [
+        {
+          "name": "Surfing"
+        },
+        {
+          "name": "Content Creation"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Isla Brown",
+      "location_name": "Gold Coast",
+      "location": { "lat": -28.0167, "long": 153.4000 },
+      "photo": "photos/isla.jpg",
+      "skills": [{ "name": "Creative Writing" }, { "name": "Blogging" }],
+      "interests": [{ "name": "Reading" }, { "name": "Beach Volleyball" }]
+    },
+    {
+      "id": 10,
+      "name": "Jack Wilson",
+      "location_name": "Newcastle",
+      "location": { "lat": -32.9283, "long": 151.7817 },
+      "photo": "photos/jack.jpg",
+      "skills": [{ "name": "Guitar" }, { "name": "Songwriting" }],
+      "interests": [{ "name": "Live Music" }, { "name": "Surfing" }]
+    },
+    {
+      "id": 11,
+      "name": "Kara Nguyen",
+      "location_name": "Sydney",
+      "location": { "lat": -33.888, "long": 151.1993 },
+      "photo": "photos/kara.jpg",
+      "skills": [{ "name": "JavaScript" }, { "name": "React" }],
+      "interests": [{ "name": "Bouldering" }, { "name": "Video Games" }]
+    },
+    {
+      "id": 12,
+      "name": "Leo Garcia",
+      "location_name": "Melbourne",
+      "location": { "lat": -37.82, "long": 144.98 },
+      "photo": "photos/leo.jpg",
+      "skills": [{ "name": "Salsa Dancing" }],
+      "interests": [{ "name": "Spanish" }, { "name": "Cooking" }]
+    },
+    {
+      "id": 13,
+      "name": "Mia Clark",
+      "location_name": "Brisbane",
+      "location": { "lat": -27.48, "long": 153.03 },
+      "photo": "photos/mia.jpg",
+      "skills": [{ "name": "Gardening" }, { "name": "Permaculture" }],
+      "interests": [{ "name": "Sustainability" }, { "name": "Hiking" }]
+    },
+    {
+      "id": 14,
+      "name": "Noah Robinson",
+      "location_name": "Perth",
+      "location": { "lat": -31.96, "long": 115.87 },
+      "photo": "photos/noah.jpg",
+      "skills": [{ "name": "Chess" }],
+      "interests": [{ "name": "Board Games" }, { "name": "History" }]
+    },
+    {
+      "id": 15,
+      "name": "Olivia White",
+      "location_name": "Adelaide",
+      "location": { "lat": -34.91, "long": 138.61 },
+      "photo": "photos/olivia.jpg",
+      "skills": [{ "name": "Pottery" }, { "name": "Ceramics" }],
+      "interests": [{ "name": "Art" }, { "name": "Wine Tasting" }]
+    },
+    {
+      "id": 16,
+      "name": "Patrick Harris",
+      "location_name": "Canberra",
+      "location": { "lat": -35.3, "long": 149.1 },
+      "photo": "photos/patrick.jpg",
+      "skills": [{ "name": "Running" }, { "name": "Marathon Training" }],
+      "interests": [{ "name": "Fitness" }, { "name": "Nutrition" }]
+    }
+  ]
+}

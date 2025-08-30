@@ -19,13 +19,15 @@ const SkillCard = ({ skill }) => {
   `;
 
   return (
-    <div className={cardClasses}>
-      <div className="relative">
-        <div className={badgeClasses}>{isTeach ? 'OFFERING' : 'SEEKING'}</div>
-        <h3 className="text-xl font-bold text-purple-200 mb-2 pr-20">{skill.title}</h3>
-        <p className="text-gray-400">{skill.description}</p>
+    <a href={`/matches.html?matchId=${skill.userId}`} className="contents">
+      <div className={cardClasses}>
+        <div className="relative">
+          <div className={badgeClasses}>{isTeach ? 'OFFERING' : 'SEEKING'}</div>
+          <h3 className="text-xl font-bold text-purple-200 mb-2 pr-20">{skill.title}</h3>
+          <p className="text-gray-400">{skill.description}</p>
+        </div>
       </div>
-    </div>
+    </a>
   );
 };
 

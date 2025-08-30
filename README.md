@@ -10,6 +10,7 @@ Climate change, resource scarcity, and the evolving nature of work all raise the
 - What solutions can optimise public resources, such as water, electricity, and waste management, in expanding cities?
 - How can we support diverse industries and workers in a future where remote work and the gig economy are the norm?
 
-## blank
+## Our Solution: hai
+hai, short for "hobbies and interests", a new social platform to enable you to swap learning skills. Whether its a new language, new sport or hobby, you'll find it in hai.
 
-## TODO
+So come on, say hai, learn a new skill and make some new friends along the way.
