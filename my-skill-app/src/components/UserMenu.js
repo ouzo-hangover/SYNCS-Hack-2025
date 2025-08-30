@@ -1,4 +1,22 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from "react";
+
+// A simple user icon placeholder.
+const UserIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-8 w-8" // Made icon bigger
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={1.5}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+    />
+  </svg>
+);
 
 const UserMenu = ({ currentUser, isLoggedIn, onNavigateToAccount, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,57 +29,77 @@ const UserMenu = ({ currentUser, isLoggedIn, onNavigateToAccount, onLogout }) =>
         setIsOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleNavigation = (action) => {
-    action();
+  const handleNavigate = (e) => {
+    e.preventDefault();
     setIsOpen(false);
+    onNavigateToAccount();
+  };
+
+  const handleLogoutClick = (e) => {
+    e.preventDefault();
+    setIsOpen(false);
+    onLogout();
   };
 
   return (
     <div className="relative" ref={menuRef}>
+      {/* The main button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="group flex items-center justify-center w-10 h-10 bg-slate-800 rounded-full hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-colors"
-        aria-haspopup="true"
-        aria-expanded={isOpen}
+        className="p-3 rounded-full text-white user-menu-gradient flex items-center justify-center
+                   transform transition duration-200 hover:scale-110 active:scale-100
+                   focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0d0d1a] focus:ring-[#be65ff]"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
+        <span className="sr-only">Open user menu</span>
+        <UserIcon />
       </button>
 
+      {/* The dropdown menu */}
       {isOpen && (
         <div
-          className="absolute right-0 mt-2 w-48 bg-slate-800 rounded-md shadow-lg py-1 z-20 ring-1 ring-black ring-opacity-5"
-          role="menu"
-          aria-orientation="vertical"
-          aria-labelledby="user-menu-button"
+          className="origin-top-right absolute right-0 mt-2 w-56 rounded-xl shadow-2xl
+                     user-menu-gradient ring-1 ring-white/10 overflow-hidden"
         >
-          {isLoggedIn ? (
-            <>
-              <a
-                href={currentUser ? `/matches.html?userId=${currentUser.id}` : '/matches.html'}
-                className="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white" role="menuitem"
-              >
-                Matches
-              </a>
-              <button onClick={() => handleNavigation(onNavigateToAccount)} className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white" role="menuitem">
-                Account
-              </button>
-              <button onClick={() => handleNavigation(onLogout)} className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white" role="menuitem">
-                Logout
-              </button>
-            </>
-          ) : (
-            <button onClick={() => handleNavigation(onNavigateToAccount)} className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white" role="menuitem">
-              Login / Register
-            </button>
-          )}
+          <div className="py-2">
+            {isLoggedIn ? (
+              <>
+                <div className="px-4 py-2">
+                  <p className="text-sm opacity-70">Signed in as</p>
+                  <p className="text-md font-medium truncate">
+                    {currentUser.name || currentUser.email}
+                  </p>
+                </div>
+                <div className="border-t border-white/10 my-1"></div>
+                <a
+                  href="#"
+                  onClick={handleNavigate}
+                  className="block px-4 py-2 text-md hover:bg-white/10 transition-colors"
+                >
+                  Account Settings
+                </a>
+                <a
+                  href="#"
+                  onClick={handleLogoutClick}
+                  className="block px-4 py-2 text-md hover:bg-white/10 transition-colors"
+                >
+                  Logout
+                </a>
+              </>
+            ) : (
+              <>
+                <a href="#" onClick={handleNavigate} className="block px-4 py-3 text-md hover:bg-white/10 transition-colors">
+                  Login
+                </a>
+                <a href="#" onClick={handleNavigate} className="block px-4 py-3 text-md hover:bg-white/10 transition-colors">
+                  Register
+                </a>
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>
