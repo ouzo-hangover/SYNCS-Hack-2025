@@ -1,4 +1,12 @@
 # SYNCS-Hack-2025
+---
+## Result
+We ended up making the finals for this hackathon with our project, hai. We also won the "Best Pitch" award for having the best presentation out of all the teams.
+
+Relevant links:
+- Devpost: https://devpost.com/software/hai-learn-something-with-someone
+- Video demo: https://youtu.be/DiQQcMn73wE
+---
 
 ## Problem Statement: CITIES OF THE FUTURE
 
