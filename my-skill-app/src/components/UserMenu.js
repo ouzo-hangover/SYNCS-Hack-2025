@@ -18,7 +18,7 @@ const UserIcon = () => (
   </svg>
 );
 
-const UserMenu = ({ currentUser, isLoggedIn, onNavigateToAccount, onLogout }) => {
+const UserMenu = ({ currentUser, isLoggedIn, onNavigateToAccount, onLogout, children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -81,6 +81,7 @@ const UserMenu = ({ currentUser, isLoggedIn, onNavigateToAccount, onLogout }) =>
                 >
                   Account Settings
                 </a>
+                {children}
                 <a
                   href="#"
                   onClick={handleLogoutClick}

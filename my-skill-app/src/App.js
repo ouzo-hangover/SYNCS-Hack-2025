@@ -120,6 +120,9 @@ const App = () => {
 
   const handleRegister = async (newUser) => {
     let userToSave = { ...newUser };
+    if (!userToSave.id) {
+      userToSave.id = Date.now(); // Simple ID for new users
+    }
     if (typeof userToSave.skills === "string") {
       userToSave.skills = userToSave.skills
         .split(",")
@@ -358,7 +361,11 @@ const App = () => {
   return (
     <div
       className="min-h-screen"
-      style={{ backgroundColor: COLORS.navy, color: COLORS.lightViolet }}
+      style={{
+        backgroundColor: COLORS.navy,
+        color: COLORS.lightViolet,
+        fontFamily: "'Lora', serif",
+      }}
     >
       {/* Animated Header */}
       <header
@@ -385,7 +392,7 @@ const App = () => {
                 className="drop-shadow-[0_0_24px_rgba(142,45,226,0.35)] transition-all duration-500 ease-in-out w-20 md:w-24"
               />
               <h1
-                className={`font-serif tracking-tight transition-all duration-500 ease-in-out text-5xl md:text-6xl ${
+                className={`tracking-tight transition-all duration-500 ease-in-out text-5xl md:text-6xl ${
                   !isHeaderShrunk ? "mt-2" : ""
                 }`}
               >
@@ -399,7 +406,13 @@ const App = () => {
               isLoggedIn={!!currentUser}
               onNavigateToAccount={() => setView("account")}
               onLogout={handleLogout}
-            />
+            >
+              {currentUser && currentUser.id && (
+                <a href={`/matches.html?userId=${currentUser.id}`} className="block w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-gray-700 hover:text-white" role="menuitem">
+                  Matches
+                </a>
+              )}
+            </UserMenu>
           </div>
         </div>
       </header>
